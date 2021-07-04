@@ -71,7 +71,7 @@ byte Search_Best_Servo;
 
 // GEstion merdique du demarrage depuis raspi
 
-// int Integer_2 = 1;
+ int Integer_2 = 1;
 
 int iteration = 0;
 
@@ -117,7 +117,7 @@ myservo1.write(Angles_Servo[0]);
 }
 
 
-void scan(uint8_t number_Stages) {
+void scan() {
 
   for (byte i = 0 ; i < number_Stages; i++)
   {
@@ -176,7 +176,7 @@ void scan(uint8_t number_Stages) {
   Serial.print(Search_Best_Servo); Serial.print(",");
   // Serial.println(Number_Correction);
 
-  Go_to_Optimum(Search_Best_Step, Search_Best_Servo); // on rejoint la meilleur position: c'est la fin de la fonction scan.
+  Go_to_Optimum(); // on rejoint la meilleur position: c'est la fin de la fonction scan.
 
 
 }
@@ -184,20 +184,30 @@ void scan(uint8_t number_Stages) {
 // rappel: un byte c'est 8 bit donc, dans notre cas, un entier inférieur à 256. correspond, je crois, à uint8_t
 
 
-void Go_to_Optimum(byte Search_Best_Step, byte Search_Best_Servo)
+void Go_to_Optimum()
 {
 
   myservo1.write(Search_Best_Servo);
   delay(2000);
-  step_2(Direction, Search_Best_Step);
+  step_2();
   delay(2000);
 
+}
+
+void Go_to_Home()
+{
+        Direction = !Direction; //
+        myservo1.write(Angles_Servo[0]);
+        delay(2000);
+        step_2();
+        delay(2000);
+        Direction = !Direction;
 }
 
 // this function will keep in an array all the value of power during à single line scan.
 // then, it process data to remove outliers and send the maximum of a line in the vector maxValuePower process further by the scan function.
 
-void step(boolean dir, int steps, byte Stages)
+void step(byte Stages)
 {
   digitalWrite(dirPin, dir);
   delay(50);
@@ -290,11 +300,13 @@ void step(boolean dir, int steps, byte Stages)
 
 // faire tounrner le panneau sans acquition.
 
-void step_2(boolean dir, int steps)
+// j'ai remplacer steps par Search_Best_Step: à verifier.
+
+void step_2()
 {
   digitalWrite(dirPin, dir);
   delay(50);
-  for (int i = 0; i < steps; i++)
+  for (int i = 0; i <  Search_Best_Step; i++)
   {
     digitalWrite(stpPin, HIGH);
     delayMicroseconds(2000);
@@ -360,16 +372,13 @@ Serial.print(iteration);Serial.print(",");
 
       if (iteration > 0) // not for the first iteration obviously
       {
-        Direction = !Direction; //
-        Go_to_Optimum(Search_Best_Step, Angles_Servo[0]); // go back to initial position, becnhmarking purpose
-        Direction = !Direction;
+        Go_to_Home()
       }
 
-      scan(number_Stages);
+      scan();
       iteration ++; // compte le nombre de scan;
     }
 
-Serial.println("test_2");
     // ina219
     current_mA = ina219.getCurrent_mA();
     voltage_V = ina219.getBusVoltage_V();
