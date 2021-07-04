@@ -5,7 +5,7 @@
 #include <Adafruit_ADS1X15.h>
 
 
-//Main paramteres:
+//Main paramters:
 
 const uint8_t  number_Stages = 2; // HAVE TO BE ALWAYS "PAIR"
 
@@ -31,10 +31,8 @@ MePort port(PORT_3);
 Servo myservo1;  // create servo object to control a servo
 int16_t servo1pin =  port.pin2();//attaches the servo on PORT_3 SLOT 2 ATTENTION slot 2 Guillaume!!! to the servo object
 
-uint8_t Angles_Servo[number_Stages-1]; // et oui, je me fais chier la byte avec cette putain d'indexation.
+uint8_t Angles_Servo[number_Stages]; 
 uint8_t Angle_Step = 10;
-
-
 
 // stepper parameter
 
@@ -44,20 +42,20 @@ const uint8_t  NumberStep = 100;
 int dirPin = mePort[PORT_1].s1;//the direction pin connect to Base Board PORT1 SLOT1
 int stpPin = mePort[PORT_1].s2;//the Step pin connect to Base Board PORT1 SLOT2
 
-
 // ina219 parameter:
 
 Adafruit_INA219 ina219;
+
 unsigned long myWantedTime;
 float voltage_V = 0;
 float current_mA = 0;
 
 // paramètres hardcore
 
-float my_array_Power[NumberStep - 1];
+float my_array_Power[NumberStep];
 
-byte maxIndex[number_Stages - 1];
-float maxValuePower[number_Stages - 1] ;
+byte maxIndex[number_Stages];
+float maxValuePower[number_Stages] ;
 
 
 float MaxMaxValuePower;
@@ -65,16 +63,15 @@ byte MaxMaxIndices;
 byte Search_Best_Step;
 byte Search_Best_Servo;
 
-
 // outliers detection
 
-uint8_t Treshold = 10;
+// uint8_t Treshold = 10;
 
-uint8_t Number_Correction = 0;
+// uint8_t Number_Correction = 0;
 
 // GEstion merdique du demarrage depuis raspi
 
-int Integer_2 = 1;
+// int Integer_2 = 1;
 
 int iteration = 0;
 
@@ -86,7 +83,7 @@ void setup()
   pinMode(dirPin, OUTPUT);
   pinMode(stpPin, OUTPUT);
 
-  Serial.begin(115200);
+  Serial.begin(9600);
 
 
   if (! ina219.begin()) {
@@ -140,6 +137,9 @@ void scan(uint8_t number_Stages) {
 
 
   MaxMaxValuePower = maxValuePower[number_Stages - 1]; // affecte la dernière valeur à MaxMaxValuePower pour pouvoir faire la comparaison dans la boucle qui suit.
+  MaxMaxIndices = number_Stages - 1;
+  Search_Best_Step = maxIndex[number_Stages - 1];
+  Search_Best_Servo = Angles_Servo[number_Stages - 1];
 
 //  Serial.print("P"); Serial.print(",");
 
@@ -174,7 +174,7 @@ void scan(uint8_t number_Stages) {
   Serial.print(MaxMaxValuePower, 2); Serial.print(",");
   Serial.print(Search_Best_Step); Serial.print(",");
   Serial.print(Search_Best_Servo); Serial.print(",");
-  Serial.println(Number_Correction);
+  // Serial.println(Number_Correction);
 
   Go_to_Optimum(Search_Best_Step, Search_Best_Servo); // on rejoint la meilleur position: c'est la fin de la fonction scan.
 
@@ -221,22 +221,22 @@ void step(boolean dir, int steps, byte Stages)
 
   // not sure about me but i will change i=1 to i=2 and steps-1 to steps-2
 
-  for (byte i = 2; i < steps - 2; i++)
-  {
+  // for (byte i = 2; i < steps - 2; i++)
+  // {
 
-    if ((my_array_Power[i] - my_array_Power[i - 1] > Treshold) || (my_array_Power[i] - my_array_Power[i - 1] < - Treshold) )
-    {
+  //   if ((my_array_Power[i] - my_array_Power[i - 1] > Treshold) || (my_array_Power[i] - my_array_Power[i - 1] < - Treshold) )
+  //   {
 
 
-      // "O" means outlier: on indique la step (i), la valeur aberrante avant correction et aprés correction.
-      Serial.print("O"); Serial.print(",");
-      Serial.print(i); Serial.print(",");
-      Serial.print( my_array_Power[i] ); Serial.print(",");
-      my_array_Power[i] = (my_array_Power[i - 2] + my_array_Power[i + 2]) / 2;
-      Number_Correction ++;
-      Serial.println( my_array_Power[i] );
+  //     // "O" means outlier: on indique la step (i), la valeur aberrante avant correction et aprés correction.
+  //     Serial.print("O"); Serial.print(",");
+  //     Serial.print(i); Serial.print(",");
+  //     Serial.print( my_array_Power[i] ); Serial.print(",");
+  //     my_array_Power[i] = (my_array_Power[i - 2] + my_array_Power[i + 2]) / 2;
+  //     Number_Correction ++;
+  //     Serial.println( my_array_Power[i] );
 
-    }
+  //   }
 
     //    if (Corrected_Array_Power[i - 1] - my_array_Power[i] > Treshold)
     //    {
@@ -262,6 +262,10 @@ void step(boolean dir, int steps, byte Stages)
   }
 
   maxValuePower[Stages] = my_array_Power[steps - 1]; // take the last as reference for algo below (steps means 100) but index begin at 0 thus 99
+  
+  // j'ai un doute ici, peut-être faut il inclure la correction plus bas avec le modulo
+  maxIndex[Stages]=steps - 1;
+
 
   for (byte i = 0; i < steps; i++)
   {
@@ -275,6 +279,7 @@ void step(boolean dir, int steps, byte Stages)
       }
       else
       {
+        // je pense que c'est OK: 100-0=100
         maxIndex[Stages] = steps - i; // si impair, on est sur le retour et il faut soustraire pour avoir l'index du pas dans le bon sens
       }
 
