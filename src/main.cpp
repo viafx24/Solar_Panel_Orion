@@ -8,7 +8,7 @@
 
 const uint8_t number_Stages = 2; // HAVE TO BE ALWAYS "PAIR"
 
-unsigned long Number_Seconds_Between_Scan = 15;
+unsigned long Number_Seconds_Between_Scan = 60;
 
 unsigned long Delay_Chosen = 1000;
 
@@ -115,7 +115,7 @@ void step(byte Stages)
     digitalWrite(stpPin, HIGH);
     delayMicroseconds(2000); // this delay maybe adjusted for sound.
 
-    current_mA = ina219.getCurrent_mA();
+    current_mA = fabs(ina219.getCurrent_mA());
     voltage_V = ina219.getBusVoltage_V();
 
     my_array_Power[i] = fabs(voltage_V * current_mA); // fabs maybe become useless
@@ -280,21 +280,16 @@ void loop()
   //      Serial.println("Motors Stopped");
   //    }
   //  }
-
-  Serial.print(Integer_2);
-  Serial.print(",");
-  Serial.print(iteration);
-  Serial.print(",");
+ if (iteration == 0)
+ {
+  delay(5000);
+ }
 
   if (Integer_2 == 1) // voir note ci dessous; necessaire de changer de nom de variable pour rentrer dans la boucle .
   {
 
     myWantedTime = millis();
-    Serial.print(myWantedTime);
-    Serial.print(",");
-    Serial.print(Number_Seconds_Between_Scan * 1000 * iteration);
-    Serial.print(",");
-    Serial.println("test");
+
     if (myWantedTime >= (Number_Seconds_Between_Scan * 1000 * iteration))
     {
 
@@ -313,9 +308,9 @@ void loop()
     Serial.print(",");
     Serial.print(ina219.getBusVoltage_V());
     Serial.print(","); // I divide by 50 in place of 100 because there is a divider bridge to protect A3
-    Serial.print(ina219.getCurrent_mA());
+    Serial.print(fabs(ina219.getCurrent_mA()));
     Serial.print(",");
-    Serial.print(fabs(voltage_V * current_mA));
+    Serial.print(fabs((ina219.getBusVoltage_V() * ina219.getCurrent_mA())));
     Serial.print(","); // favs maybe useless
 
     Serial.print(ads1115.readADC_SingleEnded(0));
