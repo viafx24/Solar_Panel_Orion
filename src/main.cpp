@@ -52,6 +52,10 @@ float current_mA = 0;
 // paramètres hardcore
 
 float my_array_Power[Number_Steps];
+uint16_t my_Photoresistor_1[Number_Steps];
+uint16_t my_Photoresistor_2[Number_Steps];
+uint16_t my_Photoresistor_3[Number_Steps];
+uint16_t my_Photoresistor_4[Number_Steps];
 
 byte maxIndex[number_Stages];
 float maxValuePower[number_Stages];
@@ -119,6 +123,12 @@ void step(byte Stages)
     voltage_V = ina219.getBusVoltage_V();
 
     my_array_Power[i] = fabs(voltage_V * current_mA); // fabs maybe become useless
+
+    my_Photoresistor_1[i] = ads1115.readADC_SingleEnded(0);
+    my_Photoresistor_2[i] = ads1115.readADC_SingleEnded(1);
+    my_Photoresistor_3[i] = ads1115.readADC_SingleEnded(2);
+    my_Photoresistor_4[i] = ads1115.readADC_SingleEnded(3);
+
     digitalWrite(stpPin, LOW);
     delayMicroseconds(2000);
   }
@@ -132,9 +142,23 @@ void step(byte Stages)
     Serial.print(",");
     Serial.print(my_array_Power[i]);
     Serial.print(","); // I print 3 times to avoid to get char when parsing the table with matlab.
-    Serial.print(my_array_Power[i]);
+    Serial.print(my_Photoresistor_1[i]);
     Serial.print(",");
-    Serial.println(my_array_Power[i]);
+    Serial.println(my_Photoresistor_2[i]);
+    Serial.print(",");
+    Serial.print(my_Photoresistor_3[i]);
+    Serial.print(","); // I print 3 times to avoid to get char when parsing the table with matlab.
+    Serial.print(my_Photoresistor_4[i]);
+    Serial.print(",");
+    Serial.print(0);
+    Serial.print(",");
+    Serial.print(0);
+    Serial.print(",");
+    Serial.print(0);
+    Serial.print(",");
+    Serial.print(0);
+    Serial.print(",");
+    Serial.println(0);
   }
 
   maxValuePower[Stages] = my_array_Power[Number_Steps - 1]; // take the last as reference for algo below (steps means 100) but index begin at 0 thus 99
@@ -179,8 +203,6 @@ void scan()
   Search_Best_Step = maxIndex[number_Stages - 1];
   Search_Best_Servo = Angles_Servo[number_Stages - 1];
 
-
-
   for (byte i = 0; i < number_Stages; i++)
   {
 
@@ -199,9 +221,23 @@ void scan()
   Serial.print(",");
   Serial.print(Search_Best_Step);
   Serial.print(",");
-  Serial.println(Search_Best_Servo);
-
-
+  Serial.print(Search_Best_Servo);
+  Serial.print(",");
+  Serial.print(0);
+  Serial.print(",");
+  Serial.print(0);
+  Serial.print(",");
+  Serial.print(0);
+  Serial.print(",");
+  Serial.print(0);
+  Serial.print(",");
+  Serial.print(0);
+  Serial.print(",");
+  Serial.print(0);
+  Serial.print(",");
+  Serial.print(0);
+  Serial.print(",");
+  Serial.println(0);
 
   Go_to_Optimum(); // on rejoint la meilleur position: c'est la fin de la fonction scan.
 }
@@ -280,10 +316,10 @@ void loop()
   //      Serial.println("Motors Stopped");
   //    }
   //  }
- if (iteration == 0)
- {
-  delay(5000);
- }
+  if (iteration == 0)
+  {
+    delay(5000);
+  }
 
   if (Integer_2 == 1) // voir note ci dessous; necessaire de changer de nom de variable pour rentrer dans la boucle .
   {
