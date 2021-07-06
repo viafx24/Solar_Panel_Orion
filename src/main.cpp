@@ -11,7 +11,7 @@ const uint8_t Number_Steps = 100;
 const uint8_t Number_Measures = 25;
 uint8_t Angle_Step = 20;
 
-const unsigned long Number_Seconds_Between_Scan = 60; // KEEP unsigned long!!
+const unsigned long Number_Seconds_Between_Scan = 600; // KEEP unsigned long!!
 const uint16_t Delay_Chosen = 1000;
 
 uint16_t Scan_Speed=100;//microsecond but much longer due to acquisition process
