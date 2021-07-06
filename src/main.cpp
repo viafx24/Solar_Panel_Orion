@@ -7,12 +7,13 @@
 //Main paramters:
 
 const uint8_t number_Stages = 4; // HAVE TO BE ALWAYS "PAIR"
-const uint8_t Number_Steps = 80;
+const uint8_t Number_Steps = 100;
+const uint8_t Number_Measures = 25;
 
 const uint16_t Number_Seconds_Between_Scan = 500;
 const uint16_t Delay_Chosen = 1000;
 
-// magnetometer 
+// magnetometer
 
 // MeCompass Compass(PORT_4);
 
@@ -50,11 +51,11 @@ float current_mA = 0;
 
 // paramètres hardcore
 
-float my_array_Power[Number_Steps];
-uint16_t my_Photoresistor_1[Number_Steps];
-uint16_t my_Photoresistor_2[Number_Steps];
-uint16_t my_Photoresistor_3[Number_Steps];
-uint16_t my_Photoresistor_4[Number_Steps];
+float my_array_Power[Number_Measures];
+uint16_t my_Photoresistor_1[Number_Measures];
+uint16_t my_Photoresistor_2[Number_Measures];
+uint16_t my_Photoresistor_3[Number_Measures];
+uint16_t my_Photoresistor_4[Number_Measures];
 
 byte maxIndex[number_Stages];
 float maxValuePower[number_Stages];
@@ -119,21 +120,23 @@ void step(byte Stages)
     digitalWrite(stpPin, HIGH);
     delayMicroseconds(2000); // this delay maybe adjusted for sound.
 
-    current_mA = fabs(ina219.getCurrent_mA());
-    voltage_V = ina219.getBusVoltage_V();
+    if (i % (Number_Steps / Number_Measures) == 0)
+    {
+      current_mA = fabs(ina219.getCurrent_mA());
+      voltage_V = ina219.getBusVoltage_V();
 
-    my_array_Power[i] = fabs(voltage_V * current_mA); // fabs maybe become useless
+      my_array_Power[i] = fabs(voltage_V * current_mA); // fabs maybe become useless
 
-    my_Photoresistor_1[i] = ads1115.readADC_SingleEnded(0);
-    my_Photoresistor_2[i] = ads1115.readADC_SingleEnded(1);
-    my_Photoresistor_3[i] = ads1115.readADC_SingleEnded(2);
-    my_Photoresistor_4[i] = ads1115.readADC_SingleEnded(3);
-
+      my_Photoresistor_1[i] = ads1115.readADC_SingleEnded(0);
+      my_Photoresistor_2[i] = ads1115.readADC_SingleEnded(1);
+      my_Photoresistor_3[i] = ads1115.readADC_SingleEnded(2);
+      my_Photoresistor_4[i] = ads1115.readADC_SingleEnded(3);
+    }
     digitalWrite(stpPin, LOW);
     delayMicroseconds(2000);
   }
 
-  for (byte i = 0; i < Number_Steps; i++)
+  for (byte i = 0; i < Number_Measures; i++)
   {
 
     Serial.print("S");
@@ -161,13 +164,13 @@ void step(byte Stages)
     // Serial.println(0);
   }
 
-  maxValuePower[Stages] = my_array_Power[Number_Steps - 1]; // take the last as reference for algo below (steps means 100) but index begin at 0 thus 99
+  maxValuePower[Stages] = my_array_Power[Number_Measures - 1]; // take the last as reference for algo below (steps means 100) but index begin at 0 thus 99
 
   // j'ai un doute ici, peut-être faut il inclure la correction plus bas avec le modulo
 
-  maxIndex[Stages] = Number_Steps - 1;
+  maxIndex[Stages] = Number_Measures - 1;
 
-  for (byte i = 0; i < Number_Steps; i++)
+  for (byte i = 0; i < Number_Measures; i++)
   {
     if (my_array_Power[i] > maxValuePower[Stages])
     {
@@ -180,7 +183,7 @@ void step(byte Stages)
       else
       {
         // je pense que c'est OK: 100-0=100
-        maxIndex[Stages] = Number_Steps - i; // si impair, on est sur le retour et il faut soustraire pour avoir l'index du pas dans le bon sens
+        maxIndex[Stages] = Number_Measures - i; // si impair, on est sur le retour et il faut soustraire pour avoir l'index du pas dans le bon sens
       }
     }
   }
