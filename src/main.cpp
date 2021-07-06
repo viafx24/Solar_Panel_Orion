@@ -8,7 +8,7 @@
 
 const uint8_t number_Stages = 4; // HAVE TO BE ALWAYS "PAIR"
 
-unsigned long Number_Seconds_Between_Scan = 500;
+unsigned long Number_Seconds_Between_Scan =100;
 
 unsigned long Delay_Chosen = 1000;
 
@@ -36,7 +36,7 @@ uint8_t Angle_Step = 10;
 // stepper parameter
 
 uint8_t Direction = 1;
-const uint8_t Number_Steps = 80;
+const uint8_t Number_Steps = 105;
 
 int dirPin = mePort[PORT_1].s1; //the direction pin connect to Base Board PORT1 SLOT1
 int stpPin = mePort[PORT_1].s2; //the Step pin connect to Base Board PORT1 SLOT2
