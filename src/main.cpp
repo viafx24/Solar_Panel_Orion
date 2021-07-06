@@ -6,12 +6,17 @@
 
 //Main paramters:
 
-const uint8_t number_Stages = 2; // HAVE TO BE ALWAYS "PAIR"
+const uint8_t number_Stages = 4; // HAVE TO BE ALWAYS "PAIR"
 const uint8_t Number_Steps = 100;
 const uint8_t Number_Measures = 25;
+uint8_t Angle_Step = 20;
 
-const uint16_t Number_Seconds_Between_Scan = 90;
+const unsigned long Number_Seconds_Between_Scan = 60; // KEEP unsigned long!!
 const uint16_t Delay_Chosen = 1000;
+
+uint16_t Scan_Speed=100;//microsecond but much longer due to acquisition process
+uint16_t Normal_Speed= 6000; //2000 looks a bit to fast for the motor.
+uint16_t InBetween_Speed= 1000;
 
 // magnetometer
 
@@ -32,7 +37,7 @@ Servo myservo1;                  // create servo object to control a servo
 int16_t servo1pin = port.pin2(); //attaches the servo on PORT_3 SLOT 2 ATTENTION slot 2 Guillaume!!! to the servo object
 
 uint8_t Angles_Servo[number_Stages];
-uint8_t Angle_Step = 10;
+
 
 // stepper parameter
 
@@ -91,27 +96,27 @@ void step_2()
   for (int i = 0; i < Search_Best_Step; i++)
   {
     digitalWrite(stpPin, HIGH);
-    delayMicroseconds(2000);
+    delayMicroseconds(Normal_Speed);
     digitalWrite(stpPin, LOW);
-    delayMicroseconds(2000);
+    delayMicroseconds(Normal_Speed);
   }
 }
 
 void Go_to_Optimum()
 {
   myservo1.write(Search_Best_Servo);
-  delay(2000);
+  delay(InBetween_Speed);
   step_2();
-  delay(2000);
+  delay(InBetween_Speed);
 }
 
 void Go_to_Home()
 {
   Direction = !Direction; //
   myservo1.write(Angles_Servo[0]);
-  delay(2000);
+  delay(InBetween_Speed);
   step_2();
-  delay(2000);
+  delay(InBetween_Speed);
   Direction = !Direction;
 }
 
@@ -125,7 +130,7 @@ void step(byte Stages)
   for (int i = 0; i < Number_Steps; i++)
   {
     digitalWrite(stpPin, HIGH);
-    delayMicroseconds(2000); // this delay maybe adjusted for sound.
+    delayMicroseconds(Scan_Speed); // this delay maybe adjusted for sound.
   
     if (i % (Number_Steps / Number_Measures) == 0)
     {
@@ -152,7 +157,7 @@ void step(byte Stages)
       delay(Toc-Tic);
     }
     digitalWrite(stpPin, LOW);
-    delayMicroseconds(2000);
+    delayMicroseconds(Scan_Speed);
   }
 
   for (byte i = 0; i < Number_Measures; i++)
@@ -196,13 +201,16 @@ void step(byte Stages)
       maxValuePower[Stages] = my_array_Power[i];
       if ((Stages % 2) == 0) // si pair, alors on est sur l'allée (indexation à zero)
       {
-
-        maxIndex[Stages] = i;
+          // pay attention here, the equation may be false or not perfectly right
+          // the goal is to recover back the real step by multypling by the value
+          // used in the modulo (100/25=4)
+        maxIndex[Stages] = i * Number_Steps / Number_Measures;
       }
       else
       {
         // je pense que c'est OK: 100-0=100
-        maxIndex[Stages] = Number_Measures - i; // si impair, on est sur le retour et il faut soustraire pour avoir l'index du pas dans le bon sens
+        // pay attention here, the equation may be false or not perfectly right
+        maxIndex[Stages] = (Number_Measures - i) * Number_Steps / Number_Measures; // si impair, on est sur le retour et il faut soustraire pour avoir l'index du pas dans le bon sens
       }
     }
   }
@@ -213,10 +221,11 @@ void scan()
 
   for (byte i = 0; i < number_Stages; i++)
   {
+
     myservo1.write(Angles_Servo[i]);
-    delay(2000);
+    delay(InBetween_Speed);
     step(i); // "i" send the current number of stage to the step function
-    delay(2000);
+    delay(InBetween_Speed);
     Direction = !Direction;
   }
 
@@ -306,34 +315,34 @@ void loop()
   // python envoie 1 pour lancer le programme et 0 pour l'arrêter (si taille fichier trop grand ou si ctrl +C). Il y a une boucle dans la gestion de keyboardinterrupt au cas
   // où le ctrl + C ne se passe pendant le scan. Le but est d'être sûr que le 0 envoyé arrive à bon port.
 
-  if (Serial.available() > 0)
-  {
-    // la gestion du passage d'un entier 1 de python à arduino est un cauchemar. La solution.
-    // la solution: déja dans python je précise qu'il s'agit d'u byte avec un petit b: ser.write(b"1")
+  // if (Serial.available() > 0)
+  // {
+  //   // la gestion du passage d'un entier 1 de python à arduino est un cauchemar. La solution.
+  //   // la solution: déja dans python je précise qu'il s'agit d'u byte avec un petit b: ser.write(b"1")
 
-    // dans arduino, j'utilise Serial.readString et non pas Serial.read.  ensuite je convertis ce string en entier en faisant Launch.toInt()
-    // on gardera en tête que j'utilise la library String avec un grand S de arduino sans doute un peu pourri.
-    //puis avec le if, si mon Integer_1 vaut 1, Integer_2 vaut 1. Le passage par une deuxième variable n'est pas clair.
-    // si j'utilise simplement Integer_1 dans le if d'aprés, il refuse de le faire passer à 1 et reste initialiser à zero.
-    // bre un merdier sans nom.
+  //   // dans arduino, j'utilise Serial.readString et non pas Serial.read.  ensuite je convertis ce string en entier en faisant Launch.toInt()
+  //   // on gardera en tête que j'utilise la library String avec un grand S de arduino sans doute un peu pourri.
+  //   //puis avec le if, si mon Integer_1 vaut 1, Integer_2 vaut 1. Le passage par une deuxième variable n'est pas clair.
+  //   // si j'utilise simplement Integer_1 dans le if d'aprés, il refuse de le faire passer à 1 et reste initialiser à zero.
+  //   // bre un merdier sans nom.
 
-    String Launch = Serial.readString(); // reçoit un byte de pyhon et considéré comme String
+  //   String Launch = Serial.readString(); // reçoit un byte de pyhon et considéré comme String
 
-    uint8_t Integer_1 = Launch.toInt(); // transformé en entier
+  //   uint8_t Integer_1 = Launch.toInt(); // transformé en entier
 
-    if (Integer_1 == 1)
-    {
+  //   if (Integer_1 == 1)
+  //   {
 
-      Integer_2 = 1; // utilisation d'une deuxième variable necessaire sans que je comprenne pourquoi
-    }
-    else if (Integer_1 == 0)
-    {
+  //     Integer_2 = 1; // utilisation d'une deuxième variable necessaire sans que je comprenne pourquoi
+  //   }
+  //   else if (Integer_1 == 0)
+  //   {
 
-      Integer_2 = 0; // utilisation d'une deuxième variable necessaire sans que je comprenne pourquoi
+  //     Integer_2 = 0; // utilisation d'une deuxième variable necessaire sans que je comprenne pourquoi
 
-      Serial.println("Motors Stopped");
-    }
-  }
+  //     Serial.println("Motors Stopped");
+  //   }
+  // }
 
   if (Integer_2 == 1) // voir note ci dessous; necessaire de changer de nom de variable pour rentrer dans la boucle .
   {
