@@ -6,11 +6,11 @@
 
 //Main paramters:
 
-const uint8_t number_Stages = 4; // HAVE TO BE ALWAYS "PAIR"
+const uint8_t number_Stages = 2; // HAVE TO BE ALWAYS "PAIR"
 const uint8_t Number_Steps = 100;
 const uint8_t Number_Measures = 25;
 
-const uint16_t Number_Seconds_Between_Scan = 500;
+const uint16_t Number_Seconds_Between_Scan = 90;
 const uint16_t Delay_Chosen = 1000;
 
 // magnetometer
@@ -74,7 +74,7 @@ byte Search_Best_Servo;
 // GEstion merdique du demarrage depuis raspi
 
 uint8_t Integer_1 = 0;
-uint8_t Integer_2 = 0;
+uint8_t Integer_2 = 1;
 
 uint16_t iteration = 0;
 
@@ -119,29 +119,36 @@ void step(byte Stages)
 {
   digitalWrite(dirPin, Direction);
   delay(50);
+
+  byte Indice_Measure = 0; 
+
   for (int i = 0; i < Number_Steps; i++)
   {
     digitalWrite(stpPin, HIGH);
     delayMicroseconds(2000); // this delay maybe adjusted for sound.
-
+  
     if (i % (Number_Steps / Number_Measures) == 0)
     {
+      
       Tic=millis();
       current_mA = fabs(ina219.getCurrent_mA());
       voltage_V = ina219.getBusVoltage_V();
 
-      my_array_Power[i] = fabs(voltage_V * current_mA); // fabs maybe become useless
+      my_array_Power[Indice_Measure] = fabs(voltage_V * current_mA); // fabs maybe become useless
 
-      my_Photoresistor_1[i] = ads1115.readADC_SingleEnded(0);
-      my_Photoresistor_2[i] = ads1115.readADC_SingleEnded(1);
-      my_Photoresistor_3[i] = ads1115.readADC_SingleEnded(2);
-      my_Photoresistor_4[i] = ads1115.readADC_SingleEnded(3);
+      my_Photoresistor_1[Indice_Measure] = ads1115.readADC_SingleEnded(0);
+      my_Photoresistor_2[Indice_Measure] = ads1115.readADC_SingleEnded(1);
+      my_Photoresistor_3[Indice_Measure] = ads1115.readADC_SingleEnded(2);
+      my_Photoresistor_4[Indice_Measure] = ads1115.readADC_SingleEnded(3);
+
+      Indice_Measure++;
       Toc=millis();
     
     }
     else
     {
-      Serial.println(Toc-Tic);
+      // Serial.println(i);
+      // Serial.println(Toc-Tic);
       delay(Toc-Tic);
     }
     digitalWrite(stpPin, LOW);
