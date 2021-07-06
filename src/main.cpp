@@ -7,12 +7,12 @@
 //Main paramters:
 
 const uint8_t number_Stages = 4; // HAVE TO BE ALWAYS "PAIR"
+const uint8_t Number_Steps = 80;
 
-unsigned long Number_Seconds_Between_Scan = 500;
+const uint16_t Number_Seconds_Between_Scan = 500;
+const uint16_t Delay_Chosen = 1000;
 
-unsigned long Delay_Chosen = 1000;
-
-// magnetometer
+// magnetometer 
 
 MeCompass Compass(PORT_4);
 
@@ -20,9 +20,9 @@ MeCompass Compass(PORT_4);
 
 Adafruit_ADS1115 ads1115;
 
-int16_t adc0, adc1, adc2, adc3;
+// int16_t adc0, adc1, adc2, adc3;
 
-float voltage_0, voltage_1, voltage_2, voltage_3;
+// float voltage_0, voltage_1, voltage_2, voltage_3;
 
 // servo
 
@@ -36,7 +36,7 @@ uint8_t Angle_Step = 10;
 // stepper parameter
 
 uint8_t Direction = 1;
-const uint8_t Number_Steps = 80;
+
 
 int dirPin = mePort[PORT_1].s1; //the direction pin connect to Base Board PORT1 SLOT1
 int stpPin = mePort[PORT_1].s2; //the Step pin connect to Base Board PORT1 SLOT2
@@ -73,9 +73,10 @@ byte Search_Best_Servo;
 
 // GEstion merdique du demarrage depuis raspi
 
-int Integer_2 = 0;
+uint8_t Integer_1 = 0;
+uint8_t Integer_2 = 0;
 
-int iteration = 0;
+uint16_t iteration = 0;
 
 //////////////////////////FUNCTIONS//////////////////////////////////
 
@@ -297,7 +298,7 @@ void loop()
 
     String Launch = Serial.readString(); // reçoit un byte de pyhon et considéré comme String
 
-    int Integer_1 = Launch.toInt(); // transformé en entier
+    uint8_t Integer_1 = Launch.toInt(); // transformé en entier
 
     if (Integer_1 == 1)
     {
