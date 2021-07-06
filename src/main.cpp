@@ -14,7 +14,7 @@ const uint16_t Delay_Chosen = 1000;
 
 // magnetometer 
 
-MeCompass Compass(PORT_4);
+// MeCompass Compass(PORT_4);
 
 //ads1115
 
@@ -153,13 +153,13 @@ void step(byte Stages)
     Serial.print(",");
     Serial.print(0);
     Serial.print(",");
-    Serial.print(0);
-    Serial.print(",");
-    Serial.print(0);
-    Serial.print(",");
-    Serial.print(0);
-    Serial.print(",");
     Serial.println(0);
+    // Serial.print(",");
+    // Serial.print(0);
+    // Serial.print(",");
+    // Serial.print(0);
+    // Serial.print(",");
+    // Serial.println(0);
   }
 
   maxValuePower[Stages] = my_array_Power[Number_Steps - 1]; // take the last as reference for algo below (steps means 100) but index begin at 0 thus 99
@@ -232,13 +232,13 @@ void scan()
   Serial.print(",");
   Serial.print(0);
   Serial.print(",");
-  Serial.print(0);
-  Serial.print(",");
-  Serial.print(0);
-  Serial.print(",");
-  Serial.print(0);
-  Serial.print(",");
   Serial.println(0);
+  // Serial.print(",");
+  // Serial.print(0);
+  // Serial.print(",");
+  // Serial.print(0);
+  // Serial.print(",");
+  // Serial.println(0);
 
   Go_to_Optimum(); // on rejoint la meilleur position: c'est la fin de la fonction scan.
 }
@@ -262,7 +262,7 @@ void setup()
   }
 
   //magneto
-  Compass.begin();
+  //Compass.begin();
 
   //ads1115
 
@@ -352,14 +352,14 @@ void loop()
     Serial.print(",");
     Serial.print(ads1115.readADC_SingleEnded(2));
     Serial.print(",");
-    Serial.print(ads1115.readADC_SingleEnded(3));
-    Serial.print(",");
+    Serial.println(ads1115.readADC_SingleEnded(3));
 
-    Serial.print(Compass.getHeadingX());
-    Serial.print(",");
-    Serial.print(Compass.getHeadingY());
-    Serial.print(",");
-    Serial.println(Compass.getHeadingZ()); // Serial.print(",");
+    //Serial.print(",");
+    // Serial.print(Compass.getHeadingX());
+    // Serial.print(",");
+    // Serial.print(Compass.getHeadingY());
+    // Serial.print(",");
+    // Serial.println(Compass.getHeadingZ()); // Serial.print(",");
 
     delay(Delay_Chosen);
   }
