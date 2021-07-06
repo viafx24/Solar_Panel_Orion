@@ -6,9 +6,9 @@
 
 //Main paramters:
 
-const uint8_t number_Stages = 2; // HAVE TO BE ALWAYS "PAIR"
+const uint8_t number_Stages = 4; // HAVE TO BE ALWAYS "PAIR"
 
-unsigned long Number_Seconds_Between_Scan = 60;
+unsigned long Number_Seconds_Between_Scan = 500;
 
 unsigned long Delay_Chosen = 1000;
 
@@ -36,7 +36,7 @@ uint8_t Angle_Step = 10;
 // stepper parameter
 
 uint8_t Direction = 1;
-const uint8_t Number_Steps = 100;
+const uint8_t Number_Steps = 80;
 
 int dirPin = mePort[PORT_1].s1; //the direction pin connect to Base Board PORT1 SLOT1
 int stpPin = mePort[PORT_1].s2; //the Step pin connect to Base Board PORT1 SLOT2
@@ -73,7 +73,7 @@ byte Search_Best_Servo;
 
 // GEstion merdique du demarrage depuis raspi
 
-int Integer_2 = 1;
+int Integer_2 = 0;
 
 int iteration = 0;
 
@@ -144,7 +144,7 @@ void step(byte Stages)
     Serial.print(","); // I print 3 times to avoid to get char when parsing the table with matlab.
     Serial.print(my_Photoresistor_1[i]);
     Serial.print(",");
-    Serial.println(my_Photoresistor_2[i]);
+    Serial.print(my_Photoresistor_2[i]);
     Serial.print(",");
     Serial.print(my_Photoresistor_3[i]);
     Serial.print(","); // I print 3 times to avoid to get char when parsing the table with matlab.
@@ -275,11 +275,6 @@ void setup()
     Angles_Servo[i] = Angles_Servo[i - 1] - Angle_Step;
   }
 
-  for (byte i = 0; i < number_Stages; i++)
-  {
-    Serial.println(Angles_Servo[i]);
-  }
-
   myservo1.write(Angles_Servo[0]);
 }
 
@@ -289,40 +284,41 @@ void loop()
   // python envoie 1 pour lancer le programme et 0 pour l'arrêter (si taille fichier trop grand ou si ctrl +C). Il y a une boucle dans la gestion de keyboardinterrupt au cas
   // où le ctrl + C ne se passe pendant le scan. Le but est d'être sûr que le 0 envoyé arrive à bon port.
 
-  //  if (Serial.available() > 0) {
-  //    // la gestion du passage d'un entier 1 de python à arduino est un cauchemar. La solution.
-  //    // la solution: déja dans python je précise qu'il s'agit d'u byte avec un petit b: ser.write(b"1")
-  //
-  //    // dans arduino, j'utilise Serial.readString et non pas Serial.read.  ensuite je convertis ce string en entier en faisant Launch.toInt()
-  //    // on gardera en tête que j'utilise la library String avec un grand S de arduino sans doute un peu pourri.
-  //    //puis avec le if, si mon Integer_1 vaut 1, Integer_2 vaut 1. Le passage par une deuxième variable n'est pas clair.
-  //    // si j'utilise simplement Integer_1 dans le if d'aprés, il refuse de le faire passer à 1 et reste initialiser à zero.
-  //    // bre un merdier sans nom.
-  //
-  //    String Launch = Serial.readString(); // reçoit un byte de pyhon et considéré comme String
-  //
-  //    int Integer_1 = Launch.toInt();// transformé en entier
-  //
-  //    if (Integer_1 == 1) {
-  //
-  //      Integer_2 = 1;// utilisation d'une deuxième variable necessaire sans que je comprenne pourquoi
-  //
-  //    }
-  //    else if (Integer_1 == 0)
-  //    {
-  //
-  //      Integer_2 = 0;// utilisation d'une deuxième variable necessaire sans que je comprenne pourquoi
-  //
-  //      Serial.println("Motors Stopped");
-  //    }
-  //  }
-  if (iteration == 0)
+  if (Serial.available() > 0)
   {
-    delay(5000);
+    // la gestion du passage d'un entier 1 de python à arduino est un cauchemar. La solution.
+    // la solution: déja dans python je précise qu'il s'agit d'u byte avec un petit b: ser.write(b"1")
+
+    // dans arduino, j'utilise Serial.readString et non pas Serial.read.  ensuite je convertis ce string en entier en faisant Launch.toInt()
+    // on gardera en tête que j'utilise la library String avec un grand S de arduino sans doute un peu pourri.
+    //puis avec le if, si mon Integer_1 vaut 1, Integer_2 vaut 1. Le passage par une deuxième variable n'est pas clair.
+    // si j'utilise simplement Integer_1 dans le if d'aprés, il refuse de le faire passer à 1 et reste initialiser à zero.
+    // bre un merdier sans nom.
+
+    String Launch = Serial.readString(); // reçoit un byte de pyhon et considéré comme String
+
+    int Integer_1 = Launch.toInt(); // transformé en entier
+
+    if (Integer_1 == 1)
+    {
+
+      Integer_2 = 1; // utilisation d'une deuxième variable necessaire sans que je comprenne pourquoi
+    }
+    else if (Integer_1 == 0)
+    {
+
+      Integer_2 = 0; // utilisation d'une deuxième variable necessaire sans que je comprenne pourquoi
+
+      Serial.println("Motors Stopped");
+    }
   }
 
   if (Integer_2 == 1) // voir note ci dessous; necessaire de changer de nom de variable pour rentrer dans la boucle .
   {
+    if (iteration == 0)
+    {
+      delay(10000);
+    }
 
     myWantedTime = millis();
 
