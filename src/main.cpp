@@ -78,6 +78,10 @@ uint8_t Integer_2 = 0;
 
 uint16_t iteration = 0;
 
+unsigned long Tic;
+unsigned long Toc;
+unsigned long Toc_Tic;
+
 //////////////////////////FUNCTIONS//////////////////////////////////
 
 void step_2()
@@ -122,6 +126,7 @@ void step(byte Stages)
 
     if (i % (Number_Steps / Number_Measures) == 0)
     {
+      Tic=millis();
       current_mA = fabs(ina219.getCurrent_mA());
       voltage_V = ina219.getBusVoltage_V();
 
@@ -131,6 +136,13 @@ void step(byte Stages)
       my_Photoresistor_2[i] = ads1115.readADC_SingleEnded(1);
       my_Photoresistor_3[i] = ads1115.readADC_SingleEnded(2);
       my_Photoresistor_4[i] = ads1115.readADC_SingleEnded(3);
+      Toc=millis();
+    
+    }
+    else
+    {
+      Serial.println(Toc-Tic);
+      delay(Toc-Tic);
     }
     digitalWrite(stpPin, LOW);
     delayMicroseconds(2000);
