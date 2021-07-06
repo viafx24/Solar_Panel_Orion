@@ -7,7 +7,7 @@
 //Main paramters:
 
 const uint8_t number_Stages = 4; // HAVE TO BE ALWAYS "PAIR"
-const uint8_t Number_Steps = 80;
+const uint8_t Number_Steps = 100;
 
 const uint16_t Number_Seconds_Between_Scan = 500;
 const uint16_t Delay_Chosen = 1000;
